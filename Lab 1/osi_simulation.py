@@ -5,88 +5,88 @@ import pickle
 # Physical Layer
 class PhysicalLayer:
     def send(self, data):
+        print("[Physical] Encoding to hex the data\t", data)
         encoded = data.hex()
-        print("[Physical] Sending raw data:", encoded)
         return encoded.encode()
 
     def receive(self, data):
+        print("[Physical] Decoding from hex the data\t", data)
         decoded = bytes.fromhex(data.decode())
-        print("[Physical] Received raw data (decoded):", decoded)
         return decoded
 
 # Data Link Layer
 class DataLinkLayer:
     def send(self, data, mac_address):
+        print("[DataLink] Framing MAC addr to data\t", data)
         framed_data = f"MAC_HEADER:{mac_address}|".encode() + data
-        print("[Data Link] Framed Data:", framed_data)
         return framed_data
 
     def receive(self, data):
+        print("[DataLink] Removing MAC addr from data\t", data)
         header, stripped_data = data.split(b'|', 1)
-        print("[Data Link] Received Data:", stripped_data)
         return stripped_data
 
 # Network Layer
 class NetworkLayer:
     def send(self, data, ip_address):
+        print("[Network] Adding IP header to data\t", data)
         packet = f"IP_HEADER:{ip_address}|".encode() + data
-        print("[Network] Routed Packet:", packet)
         return packet
 
     def receive(self, data):
+        print("[Network] Removing IP header from data\t", data)
         header, stripped_packet = data.split(b'|', 1)
-        print("[Network] Received Packet:", stripped_packet)
         return stripped_packet
 
 # Transport Layer
 class TransportLayer:
     def send(self, data):
+        print("[Transport] Segmenting data\t\t", data)
         segment = struct.pack('>I', len(data)) + data
-        print("[Transport] Segment Data:", segment)
         return segment
 
     def receive(self, data):
+        print(f"[Transport] Reassembling Data\t\t", data)
         length = struct.unpack('>I', data[:4])[0]
         reassembled_data = data[4:]
-        print(f"[Transport] Reassembled Data (SEQ {length}):", reassembled_data)
         return reassembled_data
 
 # Session Layer
 class SessionLayer:
     def send(self, data):
+        print("[Session] Opening session\t")
         session_data = json.dumps({"session": "open", "data": data.hex()}).encode()
-        print("[Session] Session Opened:", session_data)
         return session_data
 
     def receive(self, data):
+        print("[Session] Closing session\t")
         session_info = json.loads(data.decode())
         stripped = bytes.fromhex(session_info["data"])
-        print("[Session] Session Data:", stripped)
         return stripped
 
 # Presentation Layer
 class PresentationLayer:
     def send(self, data):
+        print("[Presentation] Encoding data\t\t", data)
         encoded_data = pickle.dumps(data)
-        print("[Presentation] Encoded Data:", encoded_data)
         return encoded_data
 
     def receive(self, data):
+        print("[Presentation] Decoding data\t\t", data)
         decoded_data = pickle.loads(data)
-        print("[Presentation] Decoded Data:", decoded_data)
         return decoded_data
 
 # Application Layer
 class ApplicationLayer:
     def send(self, data):
         request = f"HTTP_REQUEST:{data}".encode()
-        print("[Application] Sending Request:", request)
+        print("[Application] Sending Request\t")
         return request
 
     def receive(self, data):
         response = data.replace(b"HTTP_REQUEST:", b"HTTP_RESPONSE:OK ")
-        print("[Application] Received Response:", response)
         return response
+        print("[Application] Receiving response")
 
 if __name__ == "__main__":
     message = input("Enter message to send: ").encode()
@@ -111,7 +111,9 @@ if __name__ == "__main__":
     data_link_data = data_link.send(net_data, mac_address)
     phys_data = phys.send(data_link_data)
 
-    print("\n--- RECEIVING DATA ---\n")
+    print("\nSent Data:", phys_data)
+
+    print("\n\n--- RECEIVING DATA ---\n")
     data_received = phys.receive(phys_data)
     data_received = data_link.receive(data_received)
     data_received = net.receive(data_received)
