@@ -89,7 +89,7 @@ class ApplicationLayer:
         return response.decode()
 
 if __name__ == "__main__":
-    message = input("Enter message to send: ").encode()
+    message = input("Enter message to send: ")
 
     app = ApplicationLayer()
     pres = PresentationLayer()
