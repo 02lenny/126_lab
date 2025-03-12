@@ -16,25 +16,25 @@ class PhysicalLayer:
 
 # Data Link Layer
 class DataLinkLayer:
-    def send(self, data):
-        framed_data = b"MAC_HEADER:AA:BB:CC:DD:EE:FF" + data # Simulated MAC Address
+    def send(self, data, mac_address):
+        framed_data = f"MAC_HEADER:{mac_address}|".encode() + data
         print("[Data Link] Framed Data:", framed_data)
         return framed_data
 
     def receive(self, data):
-        stripped_data = data[len(b"MAC_HEADER:AA:BB:CC:DD:EE:FF") :] # Remove MAC Address
+        header, stripped_data = data.split(b'|', 1)
         print("[Data Link] Received Data:", stripped_data)
         return stripped_data
 
 # Network Layer
 class NetworkLayer:
-    def send(self, data):
-        packet = b"IP_HEADER:192.168.1.1->" + data # Simulated IP address
+    def send(self, data, ip_address):
+        packet = f"IP_HEADER:{ip_address}|".encode() + data
         print("[Network] Routed Packet:", packet)
         return packet
 
     def receive(self, data):
-        stripped_packet = data[len(b"IP_HEADER:192.168.1.1->") :] # Remove IP Address
+        header, stripped_packet = data.split(b'|', 1)
         print("[Network] Received Packet:", stripped_packet)
         return stripped_packet
 
@@ -99,13 +99,16 @@ if __name__ == "__main__":
     data_link = DataLinkLayer()
     phys = PhysicalLayer()
 
+    ip_address = "192.168.1.1"
+    mac_address = "00:1A:2B:3C:4D:5E"
+
     print("\n--- SENDING DATA ---\n")
     app_data = app.send(message)
     pres_data = pres.send(app_data)
     sess_data = sess.send(pres_data)
     trans_data = trans.send(sess_data)
-    net_data = net.send(trans_data)
-    data_link_data = data_link.send(net_data)
+    net_data = net.send(trans_data, ip_address)
+    data_link_data = data_link.send(net_data, mac_address)
     phys_data = phys.send(data_link_data)
 
     print("\n--- RECEIVING DATA ---\n")
