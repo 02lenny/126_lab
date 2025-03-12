@@ -78,15 +78,15 @@ class PresentationLayer:
 
 # Application Layer
 class ApplicationLayer:
-    def send(self, data):
-        request = f"HTTP_REQUEST:{data}".encode()
+    def send(self, message):
         print("[Application] Sending Request\t")
+        request = f"HTTP_REQUEST:{message}".encode()
         return request
 
-    def receive(self, data):
-        response = data.replace(b"HTTP_REQUEST:", b"HTTP_RESPONSE:OK ")
-        return response
+    def receive(self, response):
         print("[Application] Receiving response")
+        response = response.replace(b"HTTP_REQUEST:", b"")
+        return response.decode()
 
 if __name__ == "__main__":
     message = input("Enter message to send: ").encode()
@@ -122,4 +122,4 @@ if __name__ == "__main__":
     data_received = pres.receive(data_received)
     data_received = app.receive(data_received)
 
-    print("\nReceived Message:", data_received.decode())
+    print("\nReceived Message:", data_received)
